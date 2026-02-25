@@ -33,7 +33,7 @@ for i in "${!ini_files[@]}"; do
     name=$(basename "$ini")
     count=$((i + 1))
 
-    echo "[$count/$total] $name"
+    echo "[$count/$total] $CLASS_EXE $ini"
 
     if $CLASS_EXE "$ini" > "${OUT_DIR}/${name%.ini}.log" 2>&1; then
         succeeded=$((succeeded + 1))
