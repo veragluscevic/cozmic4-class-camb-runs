@@ -51,6 +51,18 @@ python analyze_pk.py -m 1e-2 --plot -s                  # also plot and save fig
 python analyze_pk.py -m all --save-khm --plot -s        # do everything
 ```
 
+## 5b. Find halfmode/envelope sigma via CLASS
+
+```bash
+python analyze_pk.py -n 2 -m 1e-2 --find-sigma                           # find sigma for one mass
+python analyze_pk.py -n 2 -m all --find-sigma                            # find sigma for all masses
+python analyze_pk.py -n 2 -m 1e-2 --find-sigma --matching-precision-percent 5  # tighter tolerance
+python analyze_pk.py -n 2 -m 1e-2 --find-sigma --mwdm 6.5               # match against different WDM
+python analyze_pk.py -n 2 -m 1e-2 --find-sigma --class-exe /path/to/class  # custom CLASS path
+```
+
+Checks existing sigma values against WDM criteria; only runs CLASS if match is bad. Updates `sim-table.dat` with new sigma and k_hm. Set `CLASS_EXE` env var for portability.
+
 ## 6. Compare CLASS vs CAMB output
 
 ```bash
