@@ -25,7 +25,7 @@ import numpy as np
 from plot_transfer import (
     SCRIPT_DIR, SIM_TABLE, CDM_FILE, OUTPUT_DIR, H,
     format_sci, parse_sim_table, unique_masses,
-    build_filename, load_columns,
+    build_filename, load_columns, transfer_wdm,
 )
 
 
@@ -41,6 +41,16 @@ def compute_khm(k, d_dmeff, d_cdm, threshold=0.5):
             k_hm = k[i] + (threshold - ratio[i]) / (ratio[i + 1] - ratio[i]) * (k[i + 1] - k[i])
             return float(k_hm)
     return None
+
+
+def compute_khm_wdm(mwdm, threshold=0.5):
+    """Compute k_hm for WDM analytically (where T_wdm(k) = threshold).
+
+    Returns k_hm in h/Mpc.
+    """
+    from scipy.optimize import brentq
+    f = lambda k: transfer_wdm(k, mwdm) - threshold
+    return brentq(f, 0.1, 1e4)
 
 
 def save_khm_to_table(results):
@@ -166,6 +176,11 @@ def main():
                 "type": stype,
                 "khm": khm,
             })
+
+    print()
+    for mwdm in [6.5, args.mwdm]:
+        khm_wdm = compute_khm_wdm(mwdm)
+        print(f"WDM  m_wdm = {mwdm} keV  -->  k_hm = {khm_wdm * H:.2f} [1/Mpc]")
 
     if args.save_khm:
         save_khm_to_table(results)
