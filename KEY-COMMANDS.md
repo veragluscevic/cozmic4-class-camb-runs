@@ -3,7 +3,7 @@
 ## 1. Generate CLASS ini files
 
 ```bash
-python generate_inis.py
+python generate_all_inis_from_sim-table.py
 ```
 
 Reads `sim-table.dat` and templates (`minimal_syncronous.ini`, `minimal_newtonian.ini`) to create ini files in `inis/`.
@@ -61,7 +61,17 @@ python analyze_pk.py -n 2 -m 1e-2 --recalculate-sigma --mwdm 6.5               #
 python analyze_pk.py -n 2 -m 1e-2 --recalculate-sigma --class-exe /path/to/class  # custom CLASS path
 ```
 
-Checks existing sigma values against WDM criteria; only runs CLASS if match is bad. Updates `sim-table.dat` with new sigma and k_hm. Set `CLASS_EXE` env var for portability.
+Checks existing sigma values against WDM criteria; only runs CLASS if match is bad. Updates `sim-table.dat` with new sigma and k_hm. Rows with `status=done` are never recalculated. Set `CLASS_EXE` env var for portability.
+
+**Note:** the bisection search requires at least one non-nan sigma per (n, m) pair as a starting point. If both halfmode and envelope are nan, the script will error out.
+
+## 5c. Batch run for all pending entries
+
+```bash
+./prepare-transfers.sh
+```
+
+Runs `analyze_pk.py --recalculate-sigma --plot` for each (n, m) pair that has at least one row without `status=done`.
 
 ## 6. Compare CLASS vs CAMB output
 

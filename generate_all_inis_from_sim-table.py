@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Generate CLASS ini files for all valid rows in sim-table.csv."""
+"""Generate CLASS ini files for all valid rows in sim-table.dat."""
 
 import os
-import csv
+import argparse
 
 
 def clean_sigma(sigma_str):
@@ -43,6 +43,13 @@ def generate_ini(template, n, mass_fmt, sigma_fmt, gauge_short):
 
 
 def main():
+    parser = argparse.ArgumentParser(
+        description="Generate CLASS ini files from sim-table.dat")
+    parser.add_argument(
+        "--skip-done", action="store_true",
+        help="skip rows whose status is 'done'")
+    args = parser.parse_args()
+
     with open('minimal_newtonian.ini', 'r') as f:
         newt_template = f.read()
     with open('minimal_syncronous.ini', 'r') as f:
@@ -51,14 +58,25 @@ def main():
     os.makedirs('inis', exist_ok=True)
 
     count = 0
-    with open('sim-table.csv', 'r') as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            n = row['n'].strip()
-            m = row['m'].strip()
-            sigma = row['sigma'].strip()
+    skipped = 0
+    with open('sim-table.dat', 'r') as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith('#'):
+                continue
+            parts = line.split()
+            if len(parts) < 5:
+                continue
+
+            n, m, sigma, stype, status = (
+                parts[0], parts[1], parts[2], parts[3], parts[4]
+            )
 
             if sigma.lower() == 'nan':
+                continue
+
+            if args.skip_done and status == 'done':
+                skipped += 1
                 continue
 
             mass_fmt = format_mass(m)
@@ -74,6 +92,8 @@ def main():
                 count += 1
 
     print(f"Created {count} ini files in inis/")
+    if skipped:
+        print(f"Skipped {skipped} rows with status 'done'")
 
 
 if __name__ == '__main__':
