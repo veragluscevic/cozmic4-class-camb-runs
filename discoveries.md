@@ -49,3 +49,18 @@ values computed directly from the CLASS transfer function output files:
 2. **n=2, m=1e-2, halfmode (σ=1.3e-25):** paper says k_hm = 58.0 Mpc⁻¹,
    CLASS output gives 56.92 (~1.9% discrepancy).  Minor rounding or
    interpolation difference.
+
+
+## "Midpoint" sigma exceeds envelope for m=1e-4 (2026-02-25)
+
+The estimated IDM upper bounds from Section 6.4 (stored as "midpoint" in
+sim-table.dat) fall outside the halfmode–envelope bracket for m=1e-4:
+
+- **n=2, m=1e-4:** midpoint 2.91e-27 > envelope 2.80e-27 (slightly above)
+- **n=4, m=1e-4:** midpoint 1.05e-25 > envelope 3.40e-26 (factor ~3 above)
+
+The other four masses (1e-2, 1 GeV for both n=2 and n=4) have midpoint
+values correctly between halfmode and envelope.  The m=1e-4 cases have
+the smallest DAOs, so the abundance-matched interpolation (which maps
+IDM subhalo counts to effective WDM masses) can overshoot the envelope
+cross section.
