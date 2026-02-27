@@ -273,7 +273,7 @@ def find_halfmode_sigma(n, m, k_hm_wdm, sigma_init, d_cdm_ref, class_exe,
 
 
 def find_envelope_sigma(n, m, mwdm, sigma_init, d_cdm_ref, class_exe,
-                        envelope_tol=0.03, max_iter=10):
+                        envelope_tol=0.03, k_max=200.0, max_iter=10):
     """Find the boundary sigma where T_IDM <= T_WDM just barely holds.
 
     d_cdm_ref is the CDM reference transfer from CDM_class_sync_tk.dat.
@@ -283,14 +283,14 @@ def find_envelope_sigma(n, m, mwdm, sigma_init, d_cdm_ref, class_exe,
     print(f"  Searching for envelope sigma...")
 
     k, d_dmeff = run_class(n, m, sigma_init, class_exe)
-    ok, max_excess = check_envelope(k, d_dmeff, d_cdm_ref, mwdm, envelope_tol)
+    ok, max_excess = check_envelope(k, d_dmeff, d_cdm_ref, mwdm, envelope_tol, k_max)
 
     if ok:
         sigma_hi = sigma_init
         sigma_lo = sigma_init / 10
         for _ in range(5):
             _, dd_lo = run_class(n, m, sigma_lo, class_exe)
-            ok_lo, _ = check_envelope(k, dd_lo, d_cdm_ref, mwdm, envelope_tol)
+            ok_lo, _ = check_envelope(k, dd_lo, d_cdm_ref, mwdm, envelope_tol, k_max)
             if not ok_lo:
                 break
             sigma_lo /= 10
@@ -304,7 +304,7 @@ def find_envelope_sigma(n, m, mwdm, sigma_init, d_cdm_ref, class_exe,
         sigma_hi = sigma_init * 10
         for _ in range(5):
             _, dd_hi = run_class(n, m, sigma_hi, class_exe)
-            ok_hi, _ = check_envelope(k, dd_hi, d_cdm_ref, mwdm, envelope_tol)
+            ok_hi, _ = check_envelope(k, dd_hi, d_cdm_ref, mwdm, envelope_tol, k_max)
             if ok_hi:
                 break
             sigma_hi *= 10
@@ -320,7 +320,7 @@ def find_envelope_sigma(n, m, mwdm, sigma_init, d_cdm_ref, class_exe,
     for it in range(max_iter):
         sigma_mid = math.sqrt(sigma_lo * sigma_hi)
         k, d_dmeff = run_class(n, m, sigma_mid, class_exe)
-        ok, max_excess = check_envelope(k, d_dmeff, d_cdm_ref, mwdm, envelope_tol)
+        ok, max_excess = check_envelope(k, d_dmeff, d_cdm_ref, mwdm, envelope_tol, k_max)
 
         k_hm = compute_khm(k, d_dmeff, d_cdm_ref)
         khm_str = f"k_hm={k_hm * H:.2f}" if k_hm else "no crossing"
@@ -387,6 +387,26 @@ def get_current_sigma(n, m, stype):
     return None
 
 
+def get_current_status(n, m, stype):
+    """Get current status from sim-table.dat for given (n, m, type).
+
+    Returns the status string, or None if not found.
+    """
+    with open(SIM_TABLE) as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            parts = line.split()
+            if len(parts) < 5:
+                continue
+            if (int(parts[0]) == n
+                    and math.isclose(float(parts[1]), m, rel_tol=1e-6)
+                    and parts[3] == stype):
+                return parts[4]
+    return None
+
+
 def update_sim_table(n, m, stype, sigma_new, khm_new):
     """Update sigma and khm for a (n, m, type) row in sim-table.dat."""
     with open(SIM_TABLE) as f:
@@ -424,15 +444,15 @@ def update_sim_table(n, m, stype, sigma_new, khm_new):
             sigma_fmt = format_sci(sigma_new)
             khm_str = f"{khm_new * H:.2f}" if khm_new is not None else "nan"
             new_lines.append(
-                f"{n_str:>3}  {m_str:>4}  {sigma_fmt:>12}  "
-                f"{stype:<8}  {status:<4}  {khm_str}\n"
+                f"   {n_str}  {m_str:>4}  {sigma_fmt:>14}    "
+                f"{stype:<8}  {status:<6}  {khm_str}\n"
             )
             updated = True
         else:
             khm_str = parts[5] if len(parts) >= 6 else "nan"
             new_lines.append(
-                f"{n_str:>3}  {m_str:>4}  {sigma_str:>12}  "
-                f"{st:<8}  {status:<4}  {khm_str}\n"
+                f"   {n_str}  {m_str:>4}  {sigma_str:>14}    "
+                f"{st:<8}  {status:<6}  {khm_str}\n"
             )
 
     with open(SIM_TABLE, "w") as f:
@@ -495,8 +515,8 @@ def save_khm_to_table(results):
             khm_str = "nan"
 
         new_lines.append(
-            f"{n_str:>3}  {m_str:>4}  {sigma_str:>12}  "
-            f"{stype:<8}  {status:<4}  {khm_str}\n"
+            f"   {n_str}  {m_str:>4}  {sigma_str:>14}    "
+            f"{stype:<8}  {status:<6}  {khm_str}\n"
         )
 
     with open(SIM_TABLE, "w") as f:
@@ -507,7 +527,7 @@ def save_khm_to_table(results):
 # ---------- Sigma-finding workflow ----------
 
 def find_sigma_for_mass(n, m, mwdm, class_exe, tolerance_frac, envelope_tol,
-                        max_iter):
+                        k_max, max_iter):
     """Find halfmode and envelope sigma for a single (n, m) pair.
 
     Checks existing values first; only runs CLASS if the current match
@@ -519,6 +539,11 @@ def find_sigma_for_mass(n, m, mwdm, class_exe, tolerance_frac, envelope_tol,
           f"(WDM {mwdm} keV, k_hm_wdm={k_hm_wdm * H:.2f} 1/Mpc) ---")
 
     for stype in ["halfmode", "envelope"]:
+        status = get_current_status(n, m, stype)
+        if status == "done":
+            print(f"  {stype}: status is 'done', skipping recalculation")
+            continue
+
         sigma_cur = get_current_sigma(n, m, stype)
 
         if sigma_cur is not None:
@@ -548,7 +573,7 @@ def find_sigma_for_mass(n, m, mwdm, class_exe, tolerance_frac, envelope_tol,
                           f" vs target {k_hm_wdm * H:.2f}, {err_str})")
                 else:
                     ok, max_excess = check_envelope(
-                        k, d_dmeff, d_cdm_ref, mwdm, envelope_tol
+                        k, d_dmeff, d_cdm_ref, mwdm, envelope_tol, k_max
                     )
                     if ok:
                         k_hm = compute_khm(k, d_dmeff, d_cdm_ref)
@@ -584,7 +609,7 @@ def find_sigma_for_mass(n, m, mwdm, class_exe, tolerance_frac, envelope_tol,
         else:
             sigma_new, k_hm_new = find_envelope_sigma(
                 n, m, mwdm, sigma_start, d_cdm_ref, class_exe,
-                envelope_tol, max_iter,
+                envelope_tol, k_max, max_iter,
             )
 
         print(f"  Final: running CLASS with sigma={format_sci(sigma_new)} "
@@ -635,6 +660,9 @@ def main():
         help="path to CLASS executable "
              f"(default: $CLASS_EXE or {DEFAULT_CLASS_EXE})")
     parser.add_argument(
+        "--envelope-kmax", type=float, default=200.0,
+        help="max k [h/Mpc] for envelope check (default: 200)")
+    parser.add_argument(
         "--max-iter", type=int, default=10,
         help="max bisection iterations for sigma search (default: 10)")
 
@@ -642,6 +670,7 @@ def main():
     n = args.n
     show_all = args.m.lower() == "all"
     tolerance_frac = args.khm_precision_percent / 100.0
+    k_max = args.envelope_kmax
     envelope_tol = args.envelope_tolerance_percent / 100.0
 
     # --- Find-sigma workflow (runs CLASS as needed) ---
@@ -662,7 +691,7 @@ def main():
         for m in masses:
             find_sigma_for_mass(
                 n, m, args.mwdm, args.class_exe, tolerance_frac, envelope_tol,
-                args.max_iter,
+                k_max, args.max_iter,
             )
         print()
 
@@ -725,7 +754,7 @@ def main():
                     match_str = "MISMATCH! (no crossing)"
             elif stype == "envelope":
                 ok, max_excess = check_envelope(
-                    k, d_dmeff, d_cdm, args.mwdm, envelope_tol
+                    k, d_dmeff, d_cdm, args.mwdm, envelope_tol, k_max
                 )
                 if ok:
                     match_str = f"ok (excess={max_excess:.4f})"

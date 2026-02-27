@@ -136,7 +136,7 @@ def main():
 
     LW = 2.2
 
-    type_ls = {"halfmode": "-", "midpoint": "--", "envelope": "--"}
+    type_ls = {"halfmode": "-", "midpoint": ":", "envelope": "--"}
     fixed_mass_colors = {
         1e-4: "C0", 1e-3: "C1", 1e-2: "C2", 1e-1: "C3", 1.0: "C4",
     }

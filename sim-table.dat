@@ -1,40 +1,40 @@
-# n  m     sigma       type      sim-status  khm
-  2  1e-4    4.2000e-28  halfmode  done  57.97
-  2  1e-4    2.9064e-27  midpoint  -     30.49
-  2  1e-4    2.8000e-27  envelope  done  30.90
+#  n  m       sigma         type      status  khm[1/Mpc]
+   2  1e-4      4.2000e-28    halfmode  done    57.97
+   2  1e-4      2.9064e-27    midpoint  -       30.49
+   2  1e-4      2.8000e-27    envelope  done    30.90
 
-  2  1e-3    1.2000e-26  halfmode  -     51.53
-  2  1e-3           nan  midpoint  -     nan
-  2  1e-3    7.4000e-25  envelope  -     10.30
+   2  1e-3      1.2000e-26    halfmode  -       51.53
+   2  1e-3             nan    midpoint  -       nan
+   2  1e-3      7.4000e-25    envelope  -       10.30
 
-  2  1e-2    1.3000e-25  halfmode  done  56.92
-  2  1e-2    2.6145e-24  midpoint  -     17.37
-  2  1e-2    7.1000e-24  envelope  done  11.70
+   2  1e-2      1.3000e-25    halfmode  done    56.92
+   2  1e-2      2.6145e-24    midpoint  -       17.37
+   2  1e-2      7.1000e-24    envelope  done    11.70
 
-  2  1e-1    2.0003e-24  halfmode  -     52.40
-  2  1e-1           nan  midpoint  -     nan
-  2  1e-1    1.0254e-22  envelope  -     11.02
+   2  1e-1      2.0003e-24    halfmode  -       52.40
+   2  1e-1             nan    midpoint  -       nan
+   2  1e-1      1.0254e-22    envelope  -       11.02
 
-  2     1    1.6000e-23  halfmode  done  58.64
-  2     1    6.4057e-23  midpoint  -     33.85
-  2     1    8.0000e-22  envelope  done  12.49
+   2     1      1.6000e-23    halfmode  done    58.64
+   2     1      6.4057e-23    midpoint  -       33.85
+   2     1      8.0000e-22    envelope  done    12.49
 
-  4  1e-4    2.2000e-27  halfmode  done  58.55
-  4  1e-4    1.0496e-25  midpoint  -     27.10
-  4  1e-4    3.4000e-26  envelope  done  34.93
+   4  1e-4      2.2000e-27    halfmode  done    58.55
+   4  1e-4      1.0496e-25    midpoint  -       27.10
+   4  1e-4      3.4000e-26    envelope  done    34.93
 
-  4  1e-3    1.9000e-24  halfmode  -     51.56
-  4  1e-3           nan  midpoint  -     nan
-  4  1e-3    1.8000e-21  envelope  -     7.65
+   4  1e-3      1.9000e-24    halfmode  -       51.56
+   4  1e-3             nan    midpoint  -       nan
+   4  1e-3      1.8000e-21    envelope  -       7.65
 
-  4  1e-2    1.7000e-22  halfmode  done  57.82
-  4  1e-2    2.7134e-20  midpoint  -     13.76
-  4  1e-2    1.7000e-19  envelope  done  8.19
+   4  1e-2      1.7000e-22    halfmode  done    57.82
+   4  1e-2      2.7134e-20    midpoint  -       13.76
+   4  1e-2      1.7000e-19    envelope  done    8.19
 
-  4  1e-1    2.5000e-20  halfmode  -     52.43
-  4  1e-1           nan  midpoint  -     nan
-  4  1e-1    1.5000e-17  envelope  -     8.54
+   4  1e-1      2.5000e-20    halfmode  -       52.43
+   4  1e-1             nan    midpoint  -       nan
+   4  1e-1      1.5000e-17    envelope  -       8.54
 
-  4     1    8.6000e-19  halfmode  done  58.03
-  4     1    5.7344e-17  midpoint  -     17.63
-  4     1    2.8000e-16  envelope  done  11.26
+   4     1      8.6000e-19    halfmode  done    58.03
+   4     1      5.7344e-17    midpoint  -       17.63
+   4     1      2.8000e-16    envelope  done    11.26

@@ -32,3 +32,20 @@ causes the envelope condition to fail even though all points within the
 intended range are fine.
 
 **Fix:** restrict the envelope check to `k <= 200 h/Mpc`.
+
+
+## Paper erratum: k_hm values in Table 1 (2026-02-25)
+
+Two k_hm entries in Table 1 of COZMIC I (arXiv:2410.03635) differ from
+values computed directly from the CLASS transfer function output files:
+
+1. **n=2, m=1e-2, envelope (σ=7.1e-24):** paper says k_hm = 21.8 Mpc⁻¹,
+   but the actual first crossing of T = d_dmeff/d_cdm = 0.5 is at 11.70.
+   The DAO oscillation causes the signed ratio to go negative and |T|
+   rises back above 0.5; T² crosses 0.25 upward at k ≈ 21.86.  The paper
+   likely reports this second (upward) crossing of T² = 0.25 rather than
+   the first (downward) crossing.
+
+2. **n=2, m=1e-2, halfmode (σ=1.3e-25):** paper says k_hm = 58.0 Mpc⁻¹,
+   CLASS output gives 56.92 (~1.9% discrepancy).  Minor rounding or
+   interpolation difference.
