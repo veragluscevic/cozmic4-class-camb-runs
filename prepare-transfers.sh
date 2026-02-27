@@ -10,8 +10,8 @@ mkdir -p "$INI_DIR"
 
 # --- Generate missing ini files ---
 clean_sigma() {
-    # Strip trailing zeros from mantissa: 4.2000e-28 -> 4.2e-28
-    echo "$1" | sed -E 's/([0-9])0+(e)/\1\2/g; s/\.(e)/\1/g'
+    # Strip trailing zeros from mantissa: 4.2000e-28 -> 4.2e-28, 8.0000e-22 -> 8e-22
+    echo "$1" | sed -E 's/(\.[0-9]*[1-9])0+e/\1e/g; s/\.0+e/e/g'
 }
 
 format_mass() {
@@ -33,7 +33,7 @@ ini_count=0
 while read -r line; do
     [[ -z "$line" || "$line" == \#* ]] && continue
     read -r n m sigma stype status rest <<< "$line"
-    [[ "${sigma,,}" == "nan" ]] && continue
+    [[ "$(echo "$sigma" | tr '[:upper:]' '[:lower:]')" == "nan" ]] && continue
 
     mass_fmt=$(format_mass "$m")
     sigma_fmt=$(clean_sigma "$sigma")
