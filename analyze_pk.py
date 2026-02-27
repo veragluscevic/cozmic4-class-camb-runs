@@ -3,21 +3,23 @@
 
 Primary capability: find the halfmode and envelope cross sections (sigma)
 for specified (n, m) by running CLASS and matching against a WDM reference
-transfer function.
+transfer function.  All ratios use d_cdm from the dedicated CDM reference
+file ./CDM_class_sync_tk.dat (never from dmeff run outputs).
 
-  - Halfmode sigma: the sigma whose transfer T_IDM first drops to 0.5 at
-    the same k as T_WDM (i.e. k_hm_IDM = k_hm_WDM).
+  - Halfmode sigma: the sigma whose transfer T_IDM = d_dmeff/d_cdm first
+    drops to 0.5 at the same k as T_WDM (i.e. k_hm_IDM = k_hm_WDM).
   - Envelope sigma: the boundary sigma where T_IDM(k) <= T_WDM(k) for all k
     just barely holds (tightest upper envelope).
 
-Secondary outcome: compute k_hm for existing transfer function files. k_hm is the wavenumber where d_dmeff/d_cdm first drops to 0.5
-(equivalently, where T^2/T_CDM^2 = 0.25).
+Secondary outcome: compute k_hm for existing transfer function files. k_hm
+is the wavenumber where d_dmeff/d_cdm first drops to 0.5 (equivalently,
+where T^2/T_CDM^2 = 0.25).
 
 Usage:
     python analyze_pk.py -n 2 -m 1e-2                        # show k_hm
     python analyze_pk.py -m all --save-khm                    # save k_hm
-    python analyze_pk.py -n 2 -m 1e-2 --find-sigma           # find sigma
-    python analyze_pk.py -n 2 -m 1e-2 --find-sigma --plot    # find & plot
+    python analyze_pk.py -n 2 -m 1e-2 --recalculate-sigma           # find sigma
+    python analyze_pk.py -n 2 -m 1e-2 --recalculate-sigma --plot    # find & plot
 """
 
 import argparse
@@ -96,7 +98,10 @@ def make_ini_content(n, m, sigma, root_rel):
 
 
 def run_class(n, m, sigma, class_exe, keep=False):
-    """Run CLASS with given parameters and return (k, d_cdm, d_dmeff).
+    """Run CLASS with given parameters and return (k, d_dmeff).
+
+    Only returns k and d_dmeff; callers should use the CDM reference file
+    for d_cdm.
 
     If keep=True, output files use standard naming and persist; an ini file
     is saved in inis/.
@@ -148,14 +153,14 @@ def run_class(n, m, sigma, class_exe, keep=False):
             os.remove(fpath)
         raise RuntimeError(f"CLASS did not produce {tk_file}")
 
-    k, d_cdm, d_dmeff = load_columns(tk_file)
+    k, _, d_dmeff = load_columns(tk_file)
 
     if not keep:
         os.remove(ini_path)
         for fpath in glob.glob(root_abs + "*"):
             os.remove(fpath)
 
-    return k, d_cdm, d_dmeff
+    return k, d_dmeff
 
 
 # ---------- Sigma matching criteria ----------
@@ -172,32 +177,34 @@ def check_halfmode(k, d_dmeff, d_cdm, k_hm_wdm, tolerance_frac):
     return rel_err < tolerance_frac, k_hm
 
 
-def check_envelope(k, d_dmeff, d_cdm, mwdm):
-    """Check if d_dmeff/d_cdm <= T_WDM(k) for all k.
+def check_envelope(k, d_dmeff, d_cdm, mwdm, envelope_tol=0.03, k_max=200.0):
+    """Check if d_dmeff/d_cdm <= T_WDM(k) for all k up to k_max.
 
-    Returns (is_satisfied, max_excess).  A small numerical tolerance
-    (1e-3) is allowed for floating-point noise.
+    k_max excludes edge artifacts near the CLASS grid boundary.
+    Returns (is_satisfied, max_excess).
     """
-    ratio = d_dmeff / d_cdm
-    t_wdm = transfer_wdm(k, mwdm)
+    mask = k <= k_max
+    ratio = d_dmeff[mask] / d_cdm[mask]
+    t_wdm = transfer_wdm(k[mask], mwdm)
     max_excess = float(np.max(ratio - t_wdm))
-    return max_excess <= 1e-3, max_excess
+    return max_excess <= envelope_tol, max_excess
 
 
 # ---------- Bisection searches ----------
 
-def find_halfmode_sigma(n, m, k_hm_wdm, sigma_init, class_exe,
+def find_halfmode_sigma(n, m, k_hm_wdm, sigma_init, d_cdm_ref, class_exe,
                         tolerance_frac, max_iter=10):
     """Bisect on sigma to find halfmode sigma matching k_hm_WDM.
 
+    d_cdm_ref is the CDM reference transfer from CDM_class_sync_tk.dat.
     Decreasing sigma moves the cutoff to higher k (less suppression).
     Returns (sigma, k_hm).
     """
     print(f"  Searching for halfmode sigma "
           f"(target k_hm = {k_hm_wdm * H:.2f} 1/Mpc)...")
 
-    k, d_cdm, d_dmeff = run_class(n, m, sigma_init, class_exe)
-    k_hm = compute_khm(k, d_dmeff, d_cdm)
+    k, d_dmeff = run_class(n, m, sigma_init, class_exe)
+    k_hm = compute_khm(k, d_dmeff, d_cdm_ref)
 
     if k_hm is not None:
         rel_err = abs(k_hm - k_hm_wdm) / k_hm_wdm
@@ -213,10 +220,10 @@ def find_halfmode_sigma(n, m, k_hm_wdm, sigma_init, class_exe,
         sigma_lo, sigma_hi = sigma_init / 100, sigma_init
 
     for _expand in range(5):
-        k_lo, dc_lo, dd_lo = run_class(n, m, sigma_lo, class_exe)
-        khm_lo = compute_khm(k_lo, dd_lo, dc_lo)
-        k_hi, dc_hi, dd_hi = run_class(n, m, sigma_hi, class_exe)
-        khm_hi = compute_khm(k_hi, dd_hi, dc_hi)
+        _, dd_lo = run_class(n, m, sigma_lo, class_exe)
+        khm_lo = compute_khm(k, dd_lo, d_cdm_ref)
+        _, dd_hi = run_class(n, m, sigma_hi, class_exe)
+        khm_hi = compute_khm(k, dd_hi, d_cdm_ref)
 
         lo_ok = (khm_lo is not None and khm_lo > k_hm_wdm)
         hi_ok = (khm_hi is None or khm_hi < k_hm_wdm)
@@ -237,8 +244,8 @@ def find_halfmode_sigma(n, m, k_hm_wdm, sigma_init, class_exe,
 
     for it in range(max_iter):
         sigma_mid = math.sqrt(sigma_lo * sigma_hi)
-        k, d_cdm, d_dmeff = run_class(n, m, sigma_mid, class_exe)
-        k_hm = compute_khm(k, d_dmeff, d_cdm)
+        k, d_dmeff = run_class(n, m, sigma_mid, class_exe)
+        k_hm = compute_khm(k, d_dmeff, d_cdm_ref)
 
         if k_hm is None:
             sigma_hi = sigma_mid
@@ -259,43 +266,45 @@ def find_halfmode_sigma(n, m, k_hm_wdm, sigma_init, class_exe,
             sigma_hi = sigma_mid
 
     sigma_final = math.sqrt(sigma_lo * sigma_hi)
-    k, d_cdm, d_dmeff = run_class(n, m, sigma_final, class_exe)
-    k_hm = compute_khm(k, d_dmeff, d_cdm)
+    k, d_dmeff = run_class(n, m, sigma_final, class_exe)
+    k_hm = compute_khm(k, d_dmeff, d_cdm_ref)
     print(f"    Reached max iterations; best sigma={format_sci(sigma_final)}")
     return sigma_final, k_hm
 
 
-def find_envelope_sigma(n, m, mwdm, sigma_init, class_exe, max_iter=10):
+def find_envelope_sigma(n, m, mwdm, sigma_init, d_cdm_ref, class_exe,
+                        envelope_tol=0.03, max_iter=10):
     """Find the boundary sigma where T_IDM <= T_WDM just barely holds.
 
+    d_cdm_ref is the CDM reference transfer from CDM_class_sync_tk.dat.
     Searches for the smallest sigma such that the envelope condition is
     satisfied (tightest upper envelope).  Returns (sigma, k_hm).
     """
     print(f"  Searching for envelope sigma...")
 
-    k, d_cdm, d_dmeff = run_class(n, m, sigma_init, class_exe)
-    ok, max_excess = check_envelope(k, d_dmeff, d_cdm, mwdm)
+    k, d_dmeff = run_class(n, m, sigma_init, class_exe)
+    ok, max_excess = check_envelope(k, d_dmeff, d_cdm_ref, mwdm, envelope_tol)
 
     if ok:
         sigma_hi = sigma_init
         sigma_lo = sigma_init / 10
         for _ in range(5):
-            k_lo, dc_lo, dd_lo = run_class(n, m, sigma_lo, class_exe)
-            ok_lo, _ = check_envelope(k_lo, dd_lo, dc_lo, mwdm)
+            _, dd_lo = run_class(n, m, sigma_lo, class_exe)
+            ok_lo, _ = check_envelope(k, dd_lo, d_cdm_ref, mwdm, envelope_tol)
             if not ok_lo:
                 break
             sigma_lo /= 10
         else:
             print(f"    Warning: envelope satisfied down to "
                   f"sigma={format_sci(sigma_lo)}")
-            k_hm = compute_khm(k_lo, dd_lo, dc_lo)
+            k_hm = compute_khm(k, dd_lo, d_cdm_ref)
             return sigma_lo, k_hm
     else:
         sigma_lo = sigma_init
         sigma_hi = sigma_init * 10
         for _ in range(5):
-            k_hi, dc_hi, dd_hi = run_class(n, m, sigma_hi, class_exe)
-            ok_hi, _ = check_envelope(k_hi, dd_hi, dc_hi, mwdm)
+            _, dd_hi = run_class(n, m, sigma_hi, class_exe)
+            ok_hi, _ = check_envelope(k, dd_hi, d_cdm_ref, mwdm, envelope_tol)
             if ok_hi:
                 break
             sigma_hi *= 10
@@ -310,10 +319,10 @@ def find_envelope_sigma(n, m, mwdm, sigma_init, class_exe, max_iter=10):
 
     for it in range(max_iter):
         sigma_mid = math.sqrt(sigma_lo * sigma_hi)
-        k, d_cdm, d_dmeff = run_class(n, m, sigma_mid, class_exe)
-        ok, max_excess = check_envelope(k, d_dmeff, d_cdm, mwdm)
+        k, d_dmeff = run_class(n, m, sigma_mid, class_exe)
+        ok, max_excess = check_envelope(k, d_dmeff, d_cdm_ref, mwdm, envelope_tol)
 
-        k_hm = compute_khm(k, d_dmeff, d_cdm)
+        k_hm = compute_khm(k, d_dmeff, d_cdm_ref)
         khm_str = f"k_hm={k_hm * H:.2f}" if k_hm else "no crossing"
 
         if ok:
@@ -325,8 +334,8 @@ def find_envelope_sigma(n, m, mwdm, sigma_init, class_exe, max_iter=10):
             print(f"    [{it+1}/{max_iter}] sigma={format_sci(sigma_mid)}"
                   f" -> exceeds by {max_excess:.4f} ({khm_str})")
 
-    k, d_cdm, d_dmeff = run_class(n, m, sigma_hi, class_exe)
-    k_hm = compute_khm(k, d_dmeff, d_cdm)
+    k, d_dmeff = run_class(n, m, sigma_hi, class_exe)
+    k_hm = compute_khm(k, d_dmeff, d_cdm_ref)
     return sigma_hi, k_hm
 
 
@@ -379,7 +388,7 @@ def get_current_sigma(n, m, stype):
 
 
 def update_sim_table(n, m, stype, sigma_new, khm_new):
-    """Update sigma, khm, and status for a (n, m, type) row in sim-table.dat."""
+    """Update sigma and khm for a (n, m, type) row in sim-table.dat."""
     with open(SIM_TABLE) as f:
         lines = f.readlines()
 
@@ -416,7 +425,7 @@ def update_sim_table(n, m, stype, sigma_new, khm_new):
             khm_str = f"{khm_new * H:.2f}" if khm_new is not None else "nan"
             new_lines.append(
                 f"{n_str:>3}  {m_str:>4}  {sigma_fmt:>12}  "
-                f"{stype:<8}  {'done':<4}  {khm_str}\n"
+                f"{stype:<8}  {status:<4}  {khm_str}\n"
             )
             updated = True
         else:
@@ -497,13 +506,15 @@ def save_khm_to_table(results):
 
 # ---------- Sigma-finding workflow ----------
 
-def find_sigma_for_mass(n, m, mwdm, class_exe, tolerance_frac, max_iter):
+def find_sigma_for_mass(n, m, mwdm, class_exe, tolerance_frac, envelope_tol,
+                        max_iter):
     """Find halfmode and envelope sigma for a single (n, m) pair.
 
     Checks existing values first; only runs CLASS if the current match
     is not good enough.
     """
     k_hm_wdm = compute_khm_wdm(mwdm)
+    _, d_cdm_ref, _ = load_columns(CDM_FILE)
     print(f"\n--- n={n}, m={format_sci(m)} GeV  "
           f"(WDM {mwdm} keV, k_hm_wdm={k_hm_wdm * H:.2f} 1/Mpc) ---")
 
@@ -515,27 +526,32 @@ def find_sigma_for_mass(n, m, mwdm, class_exe, tolerance_frac, max_iter):
             fpath = os.path.join(OUTPUT_DIR, fname)
 
             if os.path.isfile(fpath):
-                k, d_cdm, d_dmeff = load_columns(fpath)
+                k, _, d_dmeff = load_columns(fpath)
 
                 if stype == "halfmode":
                     ok, k_hm = check_halfmode(
-                        k, d_dmeff, d_cdm, k_hm_wdm, tolerance_frac
+                        k, d_dmeff, d_cdm_ref, k_hm_wdm, tolerance_frac
                     )
+                    if k_hm is not None:
+                        rel_err = abs(k_hm - k_hm_wdm) / k_hm_wdm
+                        err_str = f"err={rel_err:.1%}"
+                    else:
+                        err_str = "no crossing"
                     if ok:
                         print(f"  {stype}: sigma={format_sci(sigma_cur)} "
                               f"OK (k_hm={k_hm * H:.2f} 1/Mpc, "
-                              f"within {tolerance_frac:.0%})")
+                              f"{err_str})")
                         continue
                     print(f"  {stype}: sigma={format_sci(sigma_cur)} "
                           f"does NOT match "
                           f"(k_hm={'%.2f' % (k_hm * H) if k_hm else 'none'}"
-                          f" vs target {k_hm_wdm * H:.2f})")
+                          f" vs target {k_hm_wdm * H:.2f}, {err_str})")
                 else:
                     ok, max_excess = check_envelope(
-                        k, d_dmeff, d_cdm, mwdm
+                        k, d_dmeff, d_cdm_ref, mwdm, envelope_tol
                     )
                     if ok:
-                        k_hm = compute_khm(k, d_dmeff, d_cdm)
+                        k_hm = compute_khm(k, d_dmeff, d_cdm_ref)
                         khm_disp = (f"k_hm={k_hm * H:.2f}"
                                     if k_hm else "no crossing")
                         print(f"  {stype}: sigma={format_sci(sigma_cur)} "
@@ -562,12 +578,13 @@ def find_sigma_for_mass(n, m, mwdm, class_exe, tolerance_frac, max_iter):
 
         if stype == "halfmode":
             sigma_new, k_hm_new = find_halfmode_sigma(
-                n, m, k_hm_wdm, sigma_start, class_exe,
+                n, m, k_hm_wdm, sigma_start, d_cdm_ref, class_exe,
                 tolerance_frac, max_iter,
             )
         else:
             sigma_new, k_hm_new = find_envelope_sigma(
-                n, m, mwdm, sigma_start, class_exe, max_iter,
+                n, m, mwdm, sigma_start, d_cdm_ref, class_exe,
+                envelope_tol, max_iter,
             )
 
         print(f"  Final: running CLASS with sigma={format_sci(sigma_new)} "
@@ -605,11 +622,14 @@ def main():
         "--plot", action="store_true",
         help="call plot_transfer.py with the same arguments")
     parser.add_argument(
-        "--find-sigma", action="store_true",
+        "--recalculate-sigma", action="store_true",
         help="find halfmode/envelope sigma by running CLASS")
     parser.add_argument(
-        "--matching-precision-percent", type=float, default=7,
-        help="tolerance for k_hm matching, in %% (default: 7)")
+        "--khm-precision-percent", type=float, default=4,
+        help="tolerance for halfmode k_hm matching, in %% (default: 4)")
+    parser.add_argument(
+        "--envelope-tolerance-percent", type=float, default=3,
+        help="max allowed overshoot for envelope condition, in %% (default: 3)")
     parser.add_argument(
         "--class-exe", type=str, default=DEFAULT_CLASS_EXE,
         help="path to CLASS executable "
@@ -621,10 +641,11 @@ def main():
     args = parser.parse_args()
     n = args.n
     show_all = args.m.lower() == "all"
-    tolerance_frac = args.matching_precision_percent / 100.0
+    tolerance_frac = args.khm_precision_percent / 100.0
+    envelope_tol = args.envelope_tolerance_percent / 100.0
 
     # --- Find-sigma workflow (runs CLASS as needed) ---
-    if args.find_sigma:
+    if args.recalculate_sigma:
         if not os.path.isfile(args.class_exe):
             print(f"ERROR: CLASS executable not found at {args.class_exe}")
             raise SystemExit(1)
@@ -640,12 +661,14 @@ def main():
 
         for m in masses:
             find_sigma_for_mass(
-                n, m, args.mwdm, args.class_exe, tolerance_frac, args.max_iter
+                n, m, args.mwdm, args.class_exe, tolerance_frac, envelope_tol,
+                args.max_iter,
             )
         print()
 
     # --- k_hm analysis (always runs) ---
     k_cdm, d_cdm, _ = load_columns(CDM_FILE)
+    k_hm_wdm = compute_khm_wdm(args.mwdm)
 
     if show_all:
         all_entries = parse_sim_table(SIM_TABLE, n)
@@ -661,8 +684,8 @@ def main():
     results = []
 
     print(f"{'n':>3}  {'m':>6}  {'type':<9}  {'sigma':>14}  "
-          f"{'k_hm [1/Mpc]':>14}")
-    print("-" * 58)
+          f"{'k_hm [1/Mpc]':>14}  {'match':>20}")
+    print("-" * 78)
 
     for m in masses:
         m_entries = [
@@ -689,8 +712,29 @@ def main():
             khm = compute_khm(k, d_dmeff, d_cdm)
 
             khm_str = f"{khm * H:.2f}" if khm is not None else "n/a"
+
+            match_str = ""
+            if stype == "halfmode":
+                if khm is not None:
+                    rel_err = abs(khm - k_hm_wdm) / k_hm_wdm
+                    if rel_err < tolerance_frac:
+                        match_str = f"ok (err={rel_err:.1%})"
+                    else:
+                        match_str = f"MISMATCH! (err={rel_err:.1%})"
+                else:
+                    match_str = "MISMATCH! (no crossing)"
+            elif stype == "envelope":
+                ok, max_excess = check_envelope(
+                    k, d_dmeff, d_cdm, args.mwdm, envelope_tol
+                )
+                if ok:
+                    match_str = f"ok (excess={max_excess:.4f})"
+                else:
+                    match_str = f"MISMATCH! (excess={max_excess:.4f})"
+
             print(f"{n:>3}  {format_sci(m):>6}  {stype:<9}  "
-                  f"{format_sci(entry['sigma']):>14}  {khm_str:>14}")
+                  f"{format_sci(entry['sigma']):>14}  {khm_str:>14}"
+                  f"  {match_str}")
 
             results.append({
                 "n": n,
@@ -712,11 +756,9 @@ def main():
     if args.plot:
         cmd = [sys.executable, os.path.join(SCRIPT_DIR, "plot_transfer.py"),
                "-n", str(n), "-m", args.m,
-               "--mwdm", str(args.mwdm)]
+               "--mwdm", str(args.mwdm), "-s"]
         if args.no_midpoint:
             cmd.append("--no-midpoint")
-        if args.save:
-            cmd.append("-s")
         subprocess.run(cmd)
 
 

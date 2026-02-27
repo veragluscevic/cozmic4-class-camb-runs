@@ -1,4 +1,4 @@
-# n  m     sigma       type      status  khm
+# n  m     sigma       type      sim-status  khm
   2  1e-4    4.2000e-28  halfmode  done  57.97
   2  1e-4    2.9064e-27  midpoint  -     30.49
   2  1e-4    2.8000e-27  envelope  done  30.90
@@ -11,9 +11,9 @@
   2  1e-2    2.6145e-24  midpoint  -     17.37
   2  1e-2    7.1000e-24  envelope  done  11.70
 
-  2  1e-1    1.5000e-24  halfmode  -     58.73
+  2  1e-1    2.0003e-24  halfmode  -     52.40
   2  1e-1           nan  midpoint  -     nan
-  2  1e-1    9.0000e-23  envelope  -     11.61
+  2  1e-1    1.0254e-22  envelope  -     11.02
 
   2     1    1.6000e-23  halfmode  done  58.64
   2     1    6.4057e-23  midpoint  -     33.85
