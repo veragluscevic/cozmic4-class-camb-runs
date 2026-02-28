@@ -1,4 +1,7 @@
 # Key Commands
+# !!! Key files: sim-table.dat and prepare-transfers.sh !!!
+
+## 0. sim-table.dat contains the IDM parameters for all planned and done runs. Do NOT change manually. 
 
 ## 1. Generate CLASS ini files
 
@@ -71,7 +74,12 @@ Checks existing sigma values against WDM criteria; only runs CLASS if match is b
 ./prepare-transfers.sh
 ```
 
-Runs `analyze_pk.py --recalculate-sigma --plot` for each (n, m) pair that has at least one row without `status=done`.
+For each pending (non-`done`) entry in `sim-table.dat`:
+
+1. Generates any missing ini files in `inis/`
+2. Runs CLASS for entries with missing output files in `output/`
+3. Runs `analyze_pk.py --recalculate-sigma --plot` for each (n, m) pair
+4. Converts CLASS output to CAMB format in `converted/` (via `class_to_camb.py`)
 
 ## 6. Compare CLASS vs CAMB output
 

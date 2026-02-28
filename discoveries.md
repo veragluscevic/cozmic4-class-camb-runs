@@ -51,6 +51,12 @@ values computed directly from the CLASS transfer function output files:
    interpolation difference.
 
 
+## Paper erratum: spurious h⁻¹ factor in Eq. 4 (2026-02-28)
+
+Equation 4 of COZMIC I (arXiv:2410.03635) includes a factor of h⁻¹ that
+should not be there.
+
+
 ## "Midpoint" sigma exceeds envelope for m=1e-4 (2026-02-25)
 
 The estimated IDM upper bounds from Section 6.4 (stored as "midpoint" in
