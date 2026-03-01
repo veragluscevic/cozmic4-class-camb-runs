@@ -51,10 +51,10 @@ values computed directly from the CLASS transfer function output files:
    interpolation difference.
 
 
-## Paper erratum: spurious h⁻¹ factor in Eq. 4 (2026-02-28)
+## Paper erratum: units in Eq. 4 (2026-02-28)
 
-Equation 4 of COZMIC I (arXiv:2410.03635) includes a factor of h⁻¹ that
-should not be there.
+Equation 4 of COZMIC I (arXiv:2410.03635) has a typo in the units:
+the result should be in h⁻¹ Mpc, not Mpc.
 
 
 ## "Midpoint" sigma exceeds envelope for m=1e-4 (2026-02-25)
