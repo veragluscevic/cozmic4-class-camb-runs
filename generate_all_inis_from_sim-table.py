@@ -50,9 +50,9 @@ def main():
         help="skip rows whose status is 'done'")
     args = parser.parse_args()
 
-    with open('minimal_newtonian.ini', 'r') as f:
+    with open('COZMIC1-template-files/minimal_newtonian.ini', 'r') as f:
         newt_template = f.read()
-    with open('minimal_syncronous.ini', 'r') as f:
+    with open('COZMIC1-template-files/minimal_syncronous.ini', 'r') as f:
         sync_template = f.read()
 
     os.makedirs('inis', exist_ok=True)

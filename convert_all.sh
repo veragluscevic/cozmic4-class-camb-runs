@@ -2,7 +2,7 @@
 set -euo pipefail
 
 OUT_DIR="output"
-CONV_DIR="converted"
+CONV_DIR="transfers"
 
 mkdir -p "$CONV_DIR"
 

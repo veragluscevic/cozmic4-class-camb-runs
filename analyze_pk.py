@@ -4,7 +4,7 @@
 Primary capability: find the halfmode and envelope cross sections (sigma)
 for specified (n, m) by running CLASS and matching against a WDM reference
 transfer function.  All ratios use d_cdm from the dedicated CDM reference
-file ./CDM_class_sync_tk.dat (never from dmeff run outputs).
+file ./COZMIC1-template-files/CDM_class_sync_tk.dat (never from dmeff run outputs).
 
   - Halfmode sigma: the sigma whose transfer T_IDM = d_dmeff/d_cdm first
     drops to 0.5 at the same k as T_WDM (i.e. k_hm_IDM = k_hm_WDM).
@@ -42,7 +42,7 @@ DEFAULT_CLASS_EXE = os.environ.get(
     "CLASS_EXE",
     os.path.join(SCRIPT_DIR, "..", "class_dmeff_rui_used", "class"),
 )
-TEMPLATE_INI = os.path.join(SCRIPT_DIR, "minimal_syncronous.ini")
+TEMPLATE_INI = os.path.join(SCRIPT_DIR, "COZMIC1-template-files", "minimal_syncronous.ini")
 
 
 # ---------- k_hm computation ----------

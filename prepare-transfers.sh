@@ -3,8 +3,8 @@ set -euo pipefail
 
 TABLE="sim-table.dat"
 INI_DIR="inis"
-NEWT_TEMPLATE="minimal_newtonian.ini"
-SYNC_TEMPLATE="minimal_syncronous.ini"
+NEWT_TEMPLATE="COZMIC1-template-files/minimal_newtonian.ini"
+SYNC_TEMPLATE="COZMIC1-template-files/minimal_syncronous.ini"
 
 mkdir -p "$INI_DIR"
 
@@ -125,7 +125,7 @@ echo "$pairs" | while read -r n m; do
 done
 
 # --- Convert non-done transfers to CAMB format ---
-CONV_DIR="converted"
+CONV_DIR="transfers"
 OUT_DIR="output"
 mkdir -p "$CONV_DIR"
 

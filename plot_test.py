@@ -18,7 +18,7 @@ camb_file = args.camb_file
 
 data_class = np.loadtxt(class_file)
 data_camb = np.loadtxt(camb_file)
-data_cdm = np.loadtxt('test_CDM.dat')
+data_cdm = np.loadtxt('COZMIC1-template-files/test_CDM.dat')
 
 k_camb = data_camb[:,0]
 tk_camb = data_camb[:, index]

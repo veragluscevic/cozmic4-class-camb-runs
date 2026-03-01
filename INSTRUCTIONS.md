@@ -2,7 +2,7 @@
 
 #############
 # !!! Key files: sim-table.dat, prepare-transfers.sh !!!
-# Key results: converted/
+# Key results: transfers/
 # Before you begin, on the same level as this repo, do:
 # git clone git@github.com:kboddy/class_public.git class_dmeff_rui_used 
 # git checkout dmeff
@@ -18,7 +18,7 @@
 python generate_all_inis_from_sim-table.py
 ```
 
-Reads `sim-table.dat` and templates (`minimal_syncronous.ini`, `minimal_newtonian.ini`) to create ini files in `inis/`.
+Reads `sim-table.dat` and templates from `COZMIC1-template-files/` to create ini files in `inis/`.
 
 ## 2. Run CLASS
 
@@ -34,12 +34,12 @@ Runs CLASS on all ini files in `inis/`, saves output to `output/`.
 bash convert_all.sh
 ```
 
-Converts all CLASS output (sync + newt + background) to CAMB 13-column format in `converted/`.
+Converts all CLASS output (sync + newt + background) to CAMB 13-column format in `transfers/`.
 
 Single file:
 
 ```bash
-python class_to_camb.py output/n2_1e-2GeV_1.3e-25_sync_tk.dat output/n2_1e-2GeV_1.3e-25_newt_tk.dat output/n2_1e-2GeV_1.3e-25_sync_background.dat -o converted/camb_n2_1e-2GeV_1.3e-25_tk.dat
+python class_to_camb.py output/n2_1e-2GeV_1.3e-25_sync_tk.dat output/n2_1e-2GeV_1.3e-25_newt_tk.dat output/n2_1e-2GeV_1.3e-25_sync_background.dat -o transfers/camb_n2_1e-2GeV_1.3e-25_tk.dat
 ```
 
 ## 4. Plot transfer functions
