@@ -84,15 +84,21 @@ Checks existing sigma values against WDM criteria; only runs CLASS if match is b
 ## 5c. Batch run for all pending entries
 
 ```bash
-./prepare-transfers.sh
+./prepare-transfers.sh [--ini-dir DIR] [--class-tk-dir DIR] [--output-dir DIR] [--analyze]
 ```
+
+Optional arguments:
+- `--ini-dir DIR` — directory for ini files (default: `inis/`)
+- `--class-tk-dir DIR` — directory for CLASS transfer output (default: `output/`)
+- `--output-dir DIR` — directory for CAMB-converted transfers (default: `transfers/`)
+- `--analyze` — also run `analyze_pk.py --recalculate-sigma --plot` for each (n, m) pair
 
 For each pending (non-`done`) entry in `sim-table.dat`:
 
-1. Generates any missing ini files in `inis/`
-2. Runs CLASS for entries with missing output files in `output/`
-3. Runs `analyze_pk.py --recalculate-sigma --plot` for each (n, m) pair
-4. Converts CLASS output to CAMB format in `transfers/` (via `class_to_camb.py`)
+1. Generates any missing ini files in `--ini-dir`
+2. Runs CLASS for entries with missing output files in `--class-tk-dir`
+3. *(only with `--analyze`)* Runs `analyze_pk.py --recalculate-sigma --plot` for each (n, m) pair
+4. Converts CLASS output to CAMB format in `--output-dir` (via `class_to_camb.py`)
 
 ## 6. Compare new converted CLASS transfers with the original CAMB output from Rui An; note that original CAMB-formatted transfers from Rui are in camb_class_conversion repo, within data_tk. 
 
