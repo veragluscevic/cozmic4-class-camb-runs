@@ -15,7 +15,8 @@
 ## 1. Generate CLASS ini files
 
 ```bash
-python generate_all_inis_from_sim-table.py
+python generate_all_inis_from_sim_table.py
+python generate_all_inis_from_sim_table.py --skip-done
 ```
 
 Reads `sim-table.dat` and templates (`COZMIC1-template-files/minimal_syncronous.ini`, `COZMIC1-template-files/minimal_newtonian.ini`) to create ini files in `inis/`.

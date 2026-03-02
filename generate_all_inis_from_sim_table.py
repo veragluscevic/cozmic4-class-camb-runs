@@ -48,6 +48,9 @@ def main():
     parser.add_argument(
         "--skip-done", action="store_true",
         help="skip rows whose status is 'done'")
+    parser.add_argument(
+        "--ini-dir", type=str, default="inis",
+        help="output directory for ini files (default: inis/)")
     args = parser.parse_args()
 
     with open('COZMIC1-template-files/minimal_newtonian.ini', 'r') as f:
@@ -55,7 +58,7 @@ def main():
     with open('COZMIC1-template-files/minimal_syncronous.ini', 'r') as f:
         sync_template = f.read()
 
-    os.makedirs('inis', exist_ok=True)
+    os.makedirs(args.ini_dir, exist_ok=True)
 
     count = 0
     skipped = 0
@@ -87,11 +90,11 @@ def main():
                 content = generate_ini(template, n, mass_fmt, sigma_fmt,
                                        gauge_short)
                 filename = f"n{n}_{mass_fmt}GeV_{sigma_fmt}_{gauge_short}.ini"
-                with open(os.path.join('inis', filename), 'w') as out:
+                with open(os.path.join(args.ini_dir, filename), 'w') as out:
                     out.write(content)
                 count += 1
 
-    print(f"Created {count} ini files in inis/")
+    print(f"Created {count} ini files in {args.ini_dir}/")
     if skipped:
         print(f"Skipped {skipped} rows with status 'done'")
 
