@@ -1,4 +1,4 @@
-## COZMIC1-template-files/
+## COZMIC1-files/
 
 Reference files from COZMIC I (arXiv:2410.03635).
 
@@ -13,7 +13,7 @@ Reference files from COZMIC I (arXiv:2410.03635).
 - **`test_conversion.py`** — Compares a CAMB-converted transfer function against Rui's original CAMB output, column by column. Prints PASSED if `(|T_camb| - |T_class|)^2 / T_cdm^2 < 0.01` for all k, otherwise warns to check plots. You may want to run it for i=1,2,6,10,11, for a complete set of tests. Example:
   ```
   python test_conversion.py -i 1
-  python test_conversion.py --class-file transfers/camb_n2_1e-2GeV_7.1e-24_tk.dat --camb-file COZMIC1-template-files/data_tk/idm_n2_1e-2GeV_envelope_z99_Tk.dat -i 1 -o plots/test_n2_envelope_i1.png
+  python test_conversion.py --class-file transfers/camb_n2_1e-2GeV_7.1e-24_tk.dat --camb-file COZMIC1-files/data_tk/idm_n2_1e-2GeV_envelope_z99_Tk.dat -i 1 -o plots/test_n2_envelope_i1.png
   ```
 - **`plot_transfer_from_sim_table.py`** — Plots `(d_dmeff / d_cdm)^2` vs `k` for a given `(n, m)`, reading sigma values from `sim-table.dat`. Shows halfmode, midpoint (optional), and envelope curves alongside the WDM transfer function. Use `--output-dir` to specify a custom location for CLASS transfer files. Example:
   ```

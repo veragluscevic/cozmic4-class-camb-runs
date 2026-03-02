@@ -28,8 +28,8 @@ while [[ $# -gt 0 ]]; do
 done
 
 TABLE="sim-table.dat"
-NEWT_TEMPLATE="COZMIC1-template-files/minimal_newtonian.ini"
-SYNC_TEMPLATE="COZMIC1-template-files/minimal_syncronous.ini"
+NEWT_TEMPLATE="COZMIC1-files/minimal_newtonian.ini"
+SYNC_TEMPLATE="COZMIC1-files/minimal_syncronous.ini"
 
 mkdir -p "$INI_DIR"
 

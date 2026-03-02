@@ -7,7 +7,7 @@ import os
 parser = argparse.ArgumentParser()
 parser.add_argument('-i', '--index', type=int, default=1)
 parser.add_argument('--class-file', default='transfers/camb_n2_1e-2GeV_7.1e-24_tk.dat')
-parser.add_argument('--camb-file', default='COZMIC1-template-files/data_tk/idm_n2_1e-2GeV_envelope_z99_Tk.dat')
+parser.add_argument('--camb-file', default='COZMIC1-files/data_tk/idm_n2_1e-2GeV_envelope_z99_Tk.dat')
 parser.add_argument('-o', '--output', type=str, default=None,
                     help='Save plot to the specified path (e.g. plots/test_conversion.png).')
 args = parser.parse_args()
@@ -18,7 +18,7 @@ camb_file = args.camb_file
 
 data_class = np.loadtxt(class_file)
 data_camb = np.loadtxt(camb_file)
-data_cdm = np.loadtxt('COZMIC1-template-files/test_CDM.dat')
+data_cdm = np.loadtxt('COZMIC1-files/test_CDM.dat')
 
 k_camb = data_camb[:,0]
 tk_camb = data_camb[:, index]

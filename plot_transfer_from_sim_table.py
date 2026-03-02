@@ -19,7 +19,7 @@ import matplotlib.pyplot as plt
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 SIM_TABLE = os.path.join(SCRIPT_DIR, "sim-table.dat")
-CDM_FILE = os.path.join(SCRIPT_DIR, "COZMIC1-template-files", "CDM_class_sync_tk.dat")
+CDM_FILE = os.path.join(SCRIPT_DIR, "COZMIC1-files", "CDM_class_sync_tk.dat")
 OUTPUT_DIR = os.path.join(SCRIPT_DIR, "output")
 
 

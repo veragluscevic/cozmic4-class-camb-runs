@@ -53,9 +53,9 @@ def main():
         help="output directory for ini files (default: inis/)")
     args = parser.parse_args()
 
-    with open('COZMIC1-template-files/minimal_newtonian.ini', 'r') as f:
+    with open('COZMIC1-files/minimal_newtonian.ini', 'r') as f:
         newt_template = f.read()
-    with open('COZMIC1-template-files/minimal_syncronous.ini', 'r') as f:
+    with open('COZMIC1-files/minimal_syncronous.ini', 'r') as f:
         sync_template = f.read()
 
     os.makedirs(args.ini_dir, exist_ok=True)
