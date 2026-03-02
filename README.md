@@ -1,4 +1,24 @@
-## COZMIC1-files/
+#############
+# !!! KEY FILES: sim-table.dat, prepare-transfers.sh, make_music_conf.py, and run_music.sh !!!
+
+# KEY RESULTS: output/ (outout of CLASS), transfers/ (CAMB-formatted transfer functions for MUSIC), configs/ (MUSIC config files), ic/ (IC file produced by MUSIC)
+
+# BEFORE YOU BEGIN, on the same level as this repo, do:
+# git clone https://github.com/cosmo-sims/MUSIC2
+# and then make the code in there so you can use it
+# git clone git@github.com:kboddy/class_public.git class_dmeff_rui_used 
+# git checkout dmeff
+# and then make the code in there so you can use that version of CLASS
+
+# ALSO, copy wnoise_uc_14354454_1024-001.dat into COZMIC1-files (it's too large to store in the repo)
+
+# RUN:
+# ./run_music.sh Halo004 --all     
+##############
+
+
+## COZMIC1: 
+
 
 Reference files from COZMIC I (arXiv:2410.03635).
 

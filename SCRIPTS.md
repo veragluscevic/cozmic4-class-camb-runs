@@ -1,17 +1,4 @@
-# Key Commands and Instructions
-
-#############
-# !!! Key files: sim-table.dat, prepare-transfers.sh, make_music_conf.py, and run_music.sh !!!
-
-# Key results: output/, transfers/, configs/, ic/
-
-# Before you begin, on the same level as this repo, do:
-# git clone https://github.com/cosmo-sims/MUSIC2
-# and then make the code in there so you can use it
-# git clone git@github.com:kboddy/class_public.git class_dmeff_rui_used 
-# git checkout dmeff
-# and then make the code in there so you can use that version of CLASS
-##############
+# Key Scripts in this repo are described here.
 
 
 ## 0. sim-table.dat contains the IDM parameters for all planned and done runs. Do NOT change manually. 
