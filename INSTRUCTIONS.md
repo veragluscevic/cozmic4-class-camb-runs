@@ -24,10 +24,12 @@ Reads `sim-table.dat` and templates (`COZMIC1-template-files/minimal_syncronous.
 ## 2. Run CLASS
 
 ```bash
-bash run_class.sh
+python run_class_sim_table.py                                                   # defaults: inis/ -> output/
+python run_class_sim_table.py --ini-dir inis --output-dir output          # custom directories
+python run_class_sim_table.py --class-exe ../class_dmeff_rui_used/class                        # custom CLASS executable
 ```
 
-Runs CLASS on all ini files in `inis/`, saves output to `output/`.
+Runs CLASS on all ini files in the specified directory, saves output and logs. Defaults: `--ini-dir inis/`, `--output-dir output/`, `--class-exe` from `CLASS_EXE` env var or `../class_dmeff_rui_used/class`.
 
 ## 3. Convert CLASS to CAMB format
 
