@@ -34,10 +34,11 @@ Runs CLASS on all ini files in the specified directory, saves output and logs. D
 ## 3. Convert CLASS to CAMB format
 
 ```bash
-bash convert_all.sh
+python convert_all_transfers.py                                                 # defaults: output/ -> transfers/
+python convert_all_transfers.py --class-tk-dir my_output --output-dir my_transfers # custom directories
 ```
 
-Converts all CLASS output (sync + newt + background) to CAMB 13-column format in `transfers/`.
+Converts all CLASS output (sync + newt + background) to CAMB 13-column format.
 
 Single file:
 
