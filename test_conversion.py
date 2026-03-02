@@ -6,10 +6,10 @@ import os
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-i', '--index', type=int, default=1)
-parser.add_argument('--class-file', default='test_n2_envelope_dmeff-column.dat')
-parser.add_argument('--camb-file', default='data_tk/idm_n2_1e-2GeV_envelope_z99_Tk.dat')
-parser.add_argument('-s', '--save', nargs='?', const=True, default=False,
-                    help='Save plot to plots/. Optionally specify filename.')
+parser.add_argument('--class-file', default='transfers/camb_n2_1e-2GeV_7.1e-24_tk.dat')
+parser.add_argument('--camb-file', default='COZMIC1-template-files/data_tk/idm_n2_1e-2GeV_envelope_z99_Tk.dat')
+parser.add_argument('-o', '--output', type=str, default=None,
+                    help='Save plot to the specified path (e.g. plots/test_conversion.png).')
 args = parser.parse_args()
 
 index = args.index
@@ -73,14 +73,16 @@ ax2.legend()
 
 plt.tight_layout()
 
-if args.save:
-    os.makedirs('plots', exist_ok=True)
-    if args.save is True:
-        save_name = os.path.splitext(os.path.basename(class_file))[0] + f'_i{index}.png'
-    else:
-        save_name = args.save
-    plt.savefig(os.path.join('plots', save_name), dpi=300)
-    print(f'Saved to plots/{save_name}')
+max_rel_diff = np.max((np.abs(tk_camb_interp) - np.abs(tk_class))**2 / tk_cdm_interp**2)
+if max_rel_diff < 0.01:
+    print(f"YAY! TEST for i={index} PASSED! (max relative difference: {max_rel_diff:.4f})")
+else:
+    print(f"HMM. TEST for i={index} DOESN'T LOOK GREAT. CHECK PLOTS. (max relative difference: {max_rel_diff:.4f})")
+
+if args.output:
+    os.makedirs(os.path.dirname(args.output) or '.', exist_ok=True)
+    plt.savefig(args.output, dpi=300)
+    print(f'Saved to {args.output}')
 
 plt.show()
 

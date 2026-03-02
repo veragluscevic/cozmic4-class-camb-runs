@@ -18,7 +18,7 @@
 python generate_all_inis_from_sim-table.py
 ```
 
-Reads `sim-table.dat` and templates from `COZMIC1-template-files/` to create ini files in `inis/`.
+Reads `sim-table.dat` and templates (`COZMIC1-template-files/minimal_syncronous.ini`, `COZMIC1-template-files/minimal_newtonian.ini`) to create ini files in `inis/`.
 
 ## 2. Run CLASS
 
@@ -88,11 +88,12 @@ For each pending (non-`done`) entry in `sim-table.dat`:
 1. Generates any missing ini files in `inis/`
 2. Runs CLASS for entries with missing output files in `output/`
 3. Runs `analyze_pk.py --recalculate-sigma --plot` for each (n, m) pair
-4. Converts CLASS output to CAMB format in `converted/` (via `class_to_camb.py`)
+4. Converts CLASS output to CAMB format in `transfers/` (via `class_to_camb.py`)
 
-## 6. Compare CLASS vs CAMB output
+## 6. Compare new converted CLASS transfers with the original CAMB output from Rui An; note that original CAMB-formatted transfers from Rui are in camb_class_conversion repo, within data_tk. 
 
 ```bash
-python plot_test.py --class-file <class_file> --camb-file <camb_file> -i <column_index>
-python plot_test.py --class-file <class_file> --camb-file <camb_file> -i 1 -s
+python test_conversion.py                                                       # defaults: n2 envelope, column 1
+python test_conversion.py --class-file <class_file> --camb-file <camb_file> -i <column_index>
+python test_conversion.py --class-file transfers/camb_n2_1e-2GeV_7.1e-24_tk.dat --camb-file COZMIC1-template-files/data_tk/idm_n2_1e-2GeV_envelope_z99_Tk.dat -i 1 -o plots/test_n2_envelope_i1.png
 ```
